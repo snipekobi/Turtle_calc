@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sea Turtle Healthy Weight Calculator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0a2a3a;
+    color: #f8fafc;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .bg-gradient {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, #081d2a 0%, #0a2a3a 50%, #0c3347 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 16px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .turtle-icon {
+    font-size: 52px;
+    display: block;
+    margin-bottom: 14px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+    line-height: 1.2;
+  }
+  @media (min-width: 480px) { .header h1 { font-size: 36px; } }
+  .header h1 span { color: #4cc9e0; }
+  .header p {
+    margin-top: 10px;
+    color: #a8c8d8;
+    font-size: 14px;
+  }
+
+  /* Species selector */
+  .species-selector {
+    display: -webkit-flex;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .species-btn {
+    -webkit-flex: 1;
+    flex: 1;
+    min-width: 90px;
+    padding: 14px 10px;
+    border: 2px solid rgba(76,201,224,0.25);
+    border-radius: 14px;
+    background: rgba(14,64,96,0.5);
+    cursor: pointer;
+    text-align: center;
+    color: #a8c8d8;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .species-btn.active {
+    border-color: #4cc9e0;
+    color: #6ee4f5;
+    background: rgba(76,201,224,0.12);
+  }
+  .species-btn .sp-emoji { font-size: 24px; display: block; margin-bottom: 6px; }
+  .species-btn .sp-name { font-size: 11px; line-height: 1.35; }
+
+  /* Card */
+  .card {
+    background: rgba(14,64,96,0.45);
+    border: 1.5px solid rgba(76,201,224,0.2);
+    border-radius: 20px;
+    padding: 28px 20px;
+  }
+  @media (min-width: 480px) { .card { padding: 36px 32px; } }
+
+  /* Inputs */
+  .inputs-row {
+    display: -webkit-flex;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .input-group {
+    -webkit-flex: 1;
+    flex: 1;
+    min-width: 140px;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .input-group label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4cc9e0;
+  }
+  .input-group .label-sub {
+    font-size: 12px;
+    color: #a8c8d8;
+  }
+  .input-wrap {
+    position: relative;
+  }
+  .input-wrap input {
+    width: 100%;
+    padding: 12px 48px 12px 14px;
+    background: rgba(10,42,58,0.8);
+    border: 2px solid rgba(76,201,224,0.25);
+    border-radius: 10px;
+    color: #f8fafc;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 500;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    /* Prevent iOS zoom on focus */
+    font-size: 16px;
+  }
+  @media (min-width: 480px) { .input-wrap input { font-size: 20px; } }
+  .input-wrap input:focus {
+    border-color: #4cc9e0;
+    background: rgba(10,42,58,1);
+  }
+  .input-wrap input::placeholder { color: rgba(168,200,216,0.35); }
+  .input-unit {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #a8c8d8;
+    pointer-events: none;
+  }
+
+  /* SCL row */
+  .scl-row {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    background: rgba(10,42,58,0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(76,201,224,0.12);
+  }
+  .scl-label { font-size: 12px; color: #a8c8d8; -webkit-flex: 1; flex: 1; }
+  .scl-value { font-size: 15px; font-weight: 600; color: #4cc9e0; }
+  .scl-unit { font-size: 11px; color: #a8c8d8; }
+
+  .divider {
+    height: 1px;
+    background: rgba(76,201,224,0.15);
+    margin-bottom: 24px;
+  }
+
+  /* Results grid */
+  .results-grid {
+    display: -webkit-flex;
+    display: flex;
+    gap: 14px;
+    margin-bottom: 20px;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+  .result-box {
+    -webkit-flex: 1;
+    flex: 1;
+    min-width: 120px;
+    padding: 18px 16px;
+    border-radius: 12px;
+    background: rgba(10,42,58,0.6);
+    border: 1.5px solid rgba(76,201,224,0.15);
+  }
+  .result-box .rb-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #a8c8d8;
+    margin-bottom: 8px;
+  }
+  .result-box .rb-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #f8fafc;
+    line-height: 1;
+  }
+  .result-box .rb-unit {
+    font-size: 12px;
+    color: #a8c8d8;
+    margin-top: 4px;
+  }
+
+  /* Status card */
+  .status-box {
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    border: 2px solid rgba(76,201,224,0.2);
+    background: rgba(10,42,58,0.6);
+    margin-bottom: 20px;
+  }
+  .status-box.healthy  { border-color: #4cc9e0; background: rgba(76,201,224,0.08); }
+  .status-box.under    { border-color: #5a9e6f; background: rgba(90,158,111,0.08); }
+  .status-box.over     { border-color: #e07b54; background: rgba(224,123,84,0.08); }
+
+  .status-empty { color: #a8c8d8; font-size: 14px; padding: 16px 0; }
+
+  .status-result { display: none; }
+  .status-result.visible { display: block; }
+
+  .status-emoji-big { font-size: 32px; display: block; margin-bottom: 8px; }
+  .status-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .status-box.healthy .status-title { color: #4cc9e0; }
+  .status-box.under   .status-title { color: #7dc49a; }
+  .status-box.over    .status-title { color: #f4a07a; }
+
+  .status-pct-row {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: baseline;
+    align-items: baseline;
+    -webkit-justify-content: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 12px 0;
+  }
+  .status-pct {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .status-box.healthy .status-pct { color: #4cc9e0; }
+  .status-box.under   .status-pct { color: #7dc49a; }
+  .status-box.over    .status-pct { color: #f4a07a; }
+  .status-pct-label { font-size: 16px; color: #a8c8d8; }
+
+  .progress-track {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 10px 0 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .status-box.healthy .progress-fill { background: #4cc9e0; }
+  .status-box.under   .progress-fill { background: #7dc49a; }
+  .status-box.over    .progress-fill { background: #f4a07a; }
+
+  .status-desc { font-size: 13px; color: #a8c8d8; line-height: 1.5; }
+
+  /* Reset */
+  .reset-btn {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1.5px solid rgba(76,201,224,0.25);
+    border-radius: 10px;
+    color: #a8c8d8;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    margin-bottom: 20px;
+  }
+  .reset-btn:active { background: rgba(76,201,224,0.08); }
+
+  /* Footnote */
+  .footnote {
+    padding: 12px 16px;
+    background: rgba(10,42,58,0.4);
+    border-radius: 8px;
+    border-left: 3px solid rgba(76,201,224,0.3);
+    font-size: 12px;
+    color: #a8c8d8;
+    line-height: 1.6;
+  }
+  .footnote strong { color: #c8dde8; }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+
+<div class="container">
+
+  <div class="header">
+    <span class="turtle-icon">🐢</span>
+    <h1>Sea Turtle <span>Healthy Weight</span> Calculator</h1>
+    <p>Based on Wabnitz &amp; Pauly (2008) &middot; Green, Loggerhead &amp; Hawksbill</p>
+  </div>
+
+  <!-- Species -->
+  <div class="species-selector">
+    <button class="species-btn active" id="btn-green" onclick="selectSpecies('green')">
+      <span class="sp-emoji">🟢</span>
+      <span class="sp-name">Green Sea Turtle<br><em style="font-style:italic;font-weight:300">Chelonia mydas</em></span>
+    </button>
+    <button class="species-btn" id="btn-loggerhead" onclick="selectSpecies('loggerhead')">
+      <span class="sp-emoji">🟠</span>
+      <span class="sp-name">Loggerhead Turtle<br><em style="font-style:italic;font-weight:300">Caretta caretta</em></span>
+    </button>
+    <button class="species-btn" id="btn-hawksbill" onclick="selectSpecies('hawksbill')">
+      <span class="sp-emoji">🟡</span>
+      <span class="sp-name">Hawksbill Turtle<br><em style="font-style:italic;font-weight:300">Eretmochelys imbricata</em></span>
+    </button>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Inputs -->
+    <div class="inputs-row">
+      <div class="input-group">
+        <label>Step 1</label>
+        <div class="label-sub">Curved carapace length (CCL)</div>
+        <div class="input-wrap">
+          <input
+            type="text"
+            id="ccl"
+            placeholder="e.g. 56"
+            inputmode="decimal"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <span class="input-unit">cm</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Step 2</label>
+        <div class="label-sub">Actual body mass</div>
+        <div class="input-wrap">
+          <input
+            type="text"
+            id="mass"
+            placeholder="e.g. 8.0"
+            inputmode="decimal"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          />
+          <span class="input-unit">kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCL intermediate -->
+    <div class="scl-row">
+      <span class="scl-label" id="scl-label">Straight carapace length (SCL) — converted from CCL</span>
+      <span class="scl-value" id="scl-val">—</span>
+      <span class="scl-unit">cm</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Result boxes -->
+    <div class="results-grid">
+      <div class="result-box">
+        <div class="rb-label">Expected Mass</div>
+        <div class="rb-value" id="expected-val">—</div>
+        <div class="rb-unit">kilograms (kg)</div>
+      </div>
+      <div class="result-box">
+        <div class="rb-label">Actual Mass</div>
+        <div class="rb-value" id="actual-display">—</div>
+        <div class="rb-unit">kilograms (kg)</div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-box" id="status-box">
+      <div class="status-empty" id="status-empty">Enter curved carapace length and actual mass above to see results</div>
+      <div class="status-result" id="status-result">
+        <span class="status-emoji-big" id="status-emoji">🐢</span>
+        <div class="status-title" id="status-title"></div>
+        <div class="status-pct-row">
+          <span class="status-pct" id="status-pct"></span>
+          <span class="status-pct-label">% of expected</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="status-desc" id="status-desc"></div>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">↺ &nbsp; Clear &amp; Reset</button>
+
+    <div class="footnote">
+      <strong>Note:</strong> Calculations based on Wabnitz &amp; Pauly (2008).
+      SCL conversion for Hawksbill turtles uses Limpus (1992) — Australian populations.
+      For reference only — use alongside clinical assessment by a qualified marine biologist or veterinarian.
+    </div>
+
+  </div>
+</div>
+
+<script>
+var SPECIES = {
+  green: {
+    sclA: 0.939, sclB: 0.369,
+    massA: 0.000206, massExp: 2.896,
+    note: 'SCL: Green Sea Turtle (Wabnitz & Pauly 2008)'
+  },
+  loggerhead: {
+    sclA: 0.948, sclB: -1.442,
+    massA: 0.000282, massExp: 2.823,
+    note: 'SCL: Loggerhead Sea Turtle (Wabnitz & Pauly 2008)'
+  },
+  hawksbill: {
+    sclA: 0.935, sclB: 0.449,
+    massA: 0.000278, massExp: 2.736,
+    note: 'SCL: Hawksbill Sea Turtle — Limpus (1992), Australia'
+  }
+};
+
+var currentSpecies = 'green';
+
+function selectSpecies(key) {
+  currentSpecies = key;
+  var keys = ['green', 'loggerhead', 'hawksbill'];
+  for (var i = 0; i < keys.length; i++) {
+    var btn = document.getElementById('btn-' + keys[i]);
+    if (keys[i] === key) {
+      btn.className = 'species-btn active';
+    } else {
+      btn.className = 'species-btn';
+    }
+  }
+  document.getElementById('scl-label').textContent = SPECIES[key].note;
+  calculate();
+}
+
+function readInput(id) {
+  var el = document.getElementById(id);
+  var raw = el.value;
+  if (raw === null || raw === undefined) return NaN;
+  raw = String(raw).trim();
+  // Handle locale comma as decimal
+  raw = raw.replace(/,/g, '.');
+  // Remove anything not a digit or dot
+  raw = raw.replace(/[^0-9.]/g, '');
+  if (raw === '' || raw === '.') return NaN;
+  var n = parseFloat(raw);
+  return (isNaN(n) || !isFinite(n)) ? NaN : n;
+}
+
+function calculate() {
+  var ccl = readInput('ccl');
+  var mass = readInput('mass');
+  var sp = SPECIES[currentSpecies];
+
+  var sclEl       = document.getElementById('scl-val');
+  var expectedEl  = document.getElementById('expected-val');
+  var actualEl    = document.getElementById('actual-display');
+
+  if (!isNaN(ccl) && ccl > 0) {
+    var scl = sp.sclA * ccl + sp.sclB;
+    sclEl.textContent = (scl > 0) ? scl.toFixed(2) : '—';
+
+    var expected = sp.massA * Math.pow(scl > 0 ? scl : 0, sp.massExp);
+    expectedEl.textContent = expected.toFixed(3);
+
+    if (!isNaN(mass) && mass > 0) {
+      actualEl.textContent = mass.toFixed(3);
+      showResult(mass, expected);
+      return;
+    }
+  } else {
+    sclEl.textContent = '—';
+    expectedEl.textContent = '—';
+  }
+
+  actualEl.textContent = (!isNaN(mass) && mass > 0) ? mass.toFixed(3) : '—';
+  clearResult();
+}
+
+function showResult(actual, expected) {
+  var pct = (actual / expected) * 100;
+  var box    = document.getElementById('status-box');
+  var empty  = document.getElementById('status-empty');
+  var result = document.getElementById('status-result');
+  var emoji  = document.getElementById('status-emoji');
+  var title  = document.getElementById('status-title');
+  var pctEl  = document.getElementById('status-pct');
+  var desc   = document.getElementById('status-desc');
+  var fill   = document.getElementById('progress-fill');
+
+  // Hide empty, show result
+  empty.style.display = 'none';
+  result.style.display = 'block';
+
+  // Remove old status classes
+  box.className = 'status-box';
+
+  pctEl.textContent = pct.toFixed(1);
+  var diff = Math.abs(pct - 100).toFixed(1);
+
+  if (pct < 85) {
+    box.className = 'status-box under';
+    emoji.textContent = '⚠️';
+    title.textContent = 'Underweight';
+    desc.textContent = 'This turtle is ' + diff + '% below its expected healthy mass. Nutritional assessment and monitoring is recommended.';
+  } else if (pct <= 115) {
+    box.className = 'status-box healthy';
+    emoji.textContent = '✅';
+    title.textContent = 'Healthy Weight';
+    var direction = pct < 100 ? (diff + '% below') : (diff + '% above');
+    desc.textContent = 'This turtle is within a healthy weight range — ' + direction + ' the expected mass. Looking great!';
+  } else {
+    box.className = 'status-box over';
+    emoji.textContent = '⚠️';
+    title.textContent = 'Overweight';
+    desc.textContent = 'This turtle is ' + diff + '% above its expected healthy mass. Dietary assessment may be warranted.';
+  }
+
+  fill.style.width = Math.min(pct / 2, 100) + '%';
+}
+
+function clearResult() {
+  var box    = document.getElementById('status-box');
+  var empty  = document.getElementById('status-empty');
+  var result = document.getElementById('status-result');
+  box.className = 'status-box';
+  empty.style.display = 'block';
+  result.style.display = 'none';
+}
+
+function resetAll() {
+  document.getElementById('ccl').value = '';
+  document.getElementById('mass').value = '';
+  document.getElementById('scl-val').textContent = '—';
+  document.getElementById('expected-val').textContent = '—';
+  document.getElementById('actual-display').textContent = '—';
+  clearResult();
+}
+
+// Wire up inputs manually — no inline event handlers for broader compatibility
+function wireInput(id) {
+  var el = document.getElementById(id);
+  el.addEventListener('input', calculate);
+  el.addEventListener('change', calculate);
+  el.addEventListener('blur', calculate);
+  el.addEventListener('keyup', calculate);
+}
+wireInput('ccl');
+wireInput('mass');
+
+// Set initial SCL note
+document.getElementById('scl-label').textContent = SPECIES['green'].note;
+</script>
+</body>
+</html>
